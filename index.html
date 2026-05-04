@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>인천 미세먼지 확인</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(135deg, #e8f8f5, #ffffff);
+      padding: 40px;
+    }
+
+    .card {
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    .emoji {
+      font-size: 40px;
+      margin: 10px 0;
+    }
+
+    /* 🔥 기준 바 */
+    .scale {
+      margin-top: 30px;
+      position: relative;
+    }
+
+    .bar {
+      display: flex;
+      height: 30px;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .good { flex: 1; background: #2ecc71; }
+    .normal { flex: 1; background: #f1c40f; }
+    .bad { flex: 1; background: #e74c3c; }
+    .verybad { flex: 1; background: #8e44ad; }
+
+    .labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    /* 📍 위치 표시 */
+    .pointer {
+      position: absolute;
+      top: -10px;
+      transform: translateX(-50%);
+      font-size: 20px;
+    }
+
+    .dust-card {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.divider {
+  height: 1px;
+  background: #ddd;
+  margin: 22px 0;
+}
+
+.scale-box {
+  position: relative;
+  margin-top: 25px;
+}
+
+.scale-bar {
+  display: flex;
+  height: 26px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.scale-good {
+  background: #2ecc71;
+}
+
+.scale-normal {
+  background: #f1c40f;
+}
+
+.scale-bad {
+  background: #e74c3c;
+}
+
+.scale-verybad {
+  background: #8e44ad;
+}
+
+.pm10-good {
+  flex: 30;
+}
+
+.pm10-normal {
+  flex: 50;
+}
+
+.pm10-bad {
+  flex: 70;
+}
+
+.pm10-verybad {
+  flex: 50;
+}
+
+.pm25-good {
+  flex: 15;
+}
+
+.pm25-normal {
+  flex: 20;
+}
+
+.pm25-bad {
+  flex: 40;
+}
+
+.pm25-verybad {
+  flex: 25;
+}
+
+.pointer {
+  position: absolute;
+  top: -18px;
+  transform: translateX(-50%);
+  font-size: 20px;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-top: 6px;
+  color: #555;
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>🌿 인천 미세먼지 확인</h1>
+
+    <select id="station">
+      <option value="신흥">신흥</option>
+      <option value="연희">연희</option>
+      <option value="검단">검단</option>
+      <option value="계산">계산</option>
+      <option value="효성">효성</option>
+      <option value="고잔">고잔</option>
+      <option value="구월동">구월동</option>
+      <option value="송도">송도</option>
+      <option value="논현">논현</option>
+      <option value="부평">부평</option>
+      <option value="석남">석남</option>
+    </select>
+
+    <button onclick="checkDust()">확인</button>
+
+    <div id="result">확인을 눌러주세요</div>
+
+    <!-- 기준 바 -->
+    <div class="scale" id="scale" style="display:none;">
+      <div id="pointer" class="pointer">🔽</div>
+
+      <div class="bar">
+        <div class="good"></div>
+        <div class="normal"></div>
+        <div class="bad"></div>
+        <div class="verybad"></div>
+      </div>
+
+      <div class="labels">
+        <span>좋음</span>
+        <span>보통</span>
+        <span>나쁨</span>
+        <span>매우나쁨</span>
+      </div>
+    </div>
+
+  </div>
+
+    <script>
+    function getStatusPM10(value) {
+      if (value <= 30) return { text: "🟢 좋음", msg: "공기 대박~ 상쾌해~~ 😊" };
+      else if (value <= 80) return { text: "🟡 보통", msg: "무난무난 뭐 이정도는 괜춘 🙂" };
+      else if (value <= 150) return { text: "🔴 나쁨", msg: "아... 안좋다. 창문닫자 😷" };
+      else return { text: "🟣 매우나쁨", msg: "악! 미세먼지 최악임!! 🤢" };
+    }
+
+    function getStatusPM25(value) {
+      if (value <= 15) return { text: "🟢 좋음", msg: "공기 대박~ 나가서 숨쉬기! 최고 😊" };
+      else if (value <= 35) return { text: "🟡 보통", msg: "무난무난 뭐 이정도는 괜춘 🙂" };
+      else if (value <= 75) return { text: "🔴 나쁨", msg: "안 좋아.. 마스크꼭쓰기.. 😷" };
+      else return { text: "🟣 매우나쁨", msg: "초미세먼지 최악이다. 마스크 2겹 써야 함. 환기금지 🤢" };
+    }
+
+    function getPm10Percent(value) {
+      return Math.min(value / 200 * 100, 100);
+    }
+
+    function getPm25Percent(value) {
+      return Math.min(value / 100 * 100, 100);
+    }
+
+    async function checkDust() {
+      const station = document.getElementById("station").value;
+
+      const res = await fetch(`http://127.0.0.1:5000/dust?station=${station}`);
+      const data = await res.json();
+
+      const pm10 = parseInt(data.pm10);
+      const pm25 = parseInt(data.pm25);
+
+      const status10 = getStatusPM10(pm10);
+      const status25 = getStatusPM25(pm25);
+
+      const pm10Percent = getPm10Percent(pm10);
+      const pm25Percent = getPm25Percent(pm25);
+
+      document.getElementById("result").innerHTML = `
+        📍 ${data.stationName}<br>
+        ⏰ 측정시간: ${data.dataTime}
+
+        <div class="dust-card">
+          <h3>🌿 미세먼지</h3>
+          <strong>${pm10} μg/m³</strong><br>
+          ${status10.text}<br>
+          <small>${status10.msg}</small>
+
+          <div class="scale-box">
+            <div class="pointer" style="left:${pm10Percent}%;">🔽</div>
+            <div class="scale-bar">
+              <div class="scale-good pm10-good"></div>
+              <div class="scale-normal pm10-normal"></div>
+              <div class="scale-bad pm10-bad"></div>
+              <div class="scale-verybad pm10-verybad"></div>
+            </div>
+            <div class="scale-labels">
+              <span>0</span>
+              <span>30 좋음</span>
+              <span>80 보통</span>
+              <span>150 나쁨</span>
+              <span>200+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="dust-card">
+          <h3>🌫️ 초미세먼지</h3>
+          <strong>${pm25} μg/m³</strong><br>
+          ${status25.text}<br>
+          <small>${status25.msg}</small>
+
+          <div class="scale-box">
+            <div class="pointer" style="left:${pm25Percent}%;">🔽</div>
+            <div class="scale-bar">
+              <div class="scale-good pm25-good"></div>
+              <div class="scale-normal pm25-normal"></div>
+              <div class="scale-bad pm25-bad"></div>
+              <div class="scale-verybad pm25-verybad"></div>
+            </div>
+            <div class="scale-labels">
+              <span>0</span>
+              <span>15 좋음</span>
+              <span>35 보통</span>
+              <span>75 나쁨</span>
+              <span>100+</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
