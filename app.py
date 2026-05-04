@@ -7,6 +7,10 @@ CORS(app)
 
 API_KEY = "d20f7980935291dfada00ffe37d740017f30266838299b6134eaacf66fcaedf8"
 
+@app.route("/")
+def home():
+    return send_from_directory(".", "index.html")
+
 @app.route("/dust")
 def dust():
     station = request.args.get("station", "중구")
