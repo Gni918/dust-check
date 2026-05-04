@@ -243,7 +243,7 @@
     async function checkDust() {
       const station = document.getElementById("station").value;
 
-      const res = await fetch(`http://127.0.0.1:5000/dust?station=${station}`);
+      const res = await fetch(`/dust?station=${station}`)
       const data = await res.json();
 
       const pm10 = parseInt(data.pm10);
